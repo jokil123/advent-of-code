@@ -7,6 +7,8 @@ fn main() {
 
     takes_reference(&my_test);
     takes_mut_reference(&mut my_test);
+    takes_and_gives_reference(&my_test);
+    takes_mut_reference_and_gives_reference(&mut my_test);
     takes_ownership(my_test);
 }
 
@@ -26,6 +28,18 @@ fn takes_mut_reference(test: &mut Test) -> bool {
     test.my_bool = !test.my_bool;
 
     return test.my_bool;
+}
+
+fn takes_and_gives_reference(test: &Test) -> bool {
+    return takes_reference(test);
+}
+
+fn takes_mut_reference_and_gives_reference(test: &mut Test) -> bool {
+    return takes_reference(test);
+}
+
+fn takes_reference_and_gives_mut_reference(test: &Test) -> bool {
+    return takes_mut_reference(&test);
 }
 
 struct Test {
