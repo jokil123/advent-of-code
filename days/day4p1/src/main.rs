@@ -1,26 +1,53 @@
 mod inputs;
 
 fn main() {
-    println!("{:?}", inputs::bingo_boards());
+    // println!("{:?}", inputs::bingo_boards());
 
-    let boards = inputs::bingo_boards()
+    let mut boards = inputs::bingo_boards()
         .iter()
         .map(|e| BingoBoard {
             board_values: *e,
             board_state: [[false; 5]; 5],
         })
         .collect::<Vec<BingoBoard>>();
+
+    /*
+    let mut boards = [BingoBoard {
+        board_values: [
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24, 25],
+        ],
+        board_state: [[false; 5]; 5],
+    }]
+    .try_into()
+    .unwrap();
+
+    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9].to_vec();
+
+    */
+
+    let numbers = inputs::bingo_numbers();
+
+    let mut games = play_games(&mut boards, &numbers);
+
+    games.sort_by(|a, b| a.win_time.cmp(&b.win_time));
+
+    games.iter().enumerate().for_each(|(i, g)| {
+        println!(
+            "game: {}, score: {}, win: {}, won in: {}",
+            i, g.score, g.win, g.win_time
+        )
+    });
 }
 
-fn play_games(boards: &mut Vec<&mut BingoBoard>, numbers: &Vec<i64>) -> Vec<BingoGame> {
-    let a = boards.iter().map(|board| play_board(board, &numbers));
-    // .collect::<Vec<BingoGame>>()
-
-    return vec![BingoGame {
-        score: 0,
-        win: false,
-        win_time: 0,
-    }];
+fn play_games(boards: &mut Vec<BingoBoard>, numbers: &Vec<i64>) -> Vec<BingoGame> {
+    return boards
+        .iter_mut()
+        .map(|board| play_board(board, &numbers))
+        .collect::<Vec<BingoGame>>();
 }
 
 fn play_board(board: &mut BingoBoard, numbers: &Vec<i64>) -> BingoGame {
@@ -40,6 +67,7 @@ fn play_board(board: &mut BingoBoard, numbers: &Vec<i64>) -> BingoGame {
 
             if game.win {
                 game.win_time = i;
+                game.score = get_board_score(board, n);
                 break;
             }
         }
@@ -48,12 +76,12 @@ fn play_board(board: &mut BingoBoard, numbers: &Vec<i64>) -> BingoGame {
     return game;
 }
 
-fn get_board_score(board: BingoBoard, last_draw: i64) -> i64 {
+fn get_board_score(board: &BingoBoard, last_draw: &i64) -> i64 {
     let mut score = 0;
 
     board.board_state.iter().enumerate().for_each(|(i, e)| {
         e.iter().enumerate().for_each(|(j, e)| {
-            if *e {
+            if !*e {
                 score += board.board_values[i][j]
             }
         })
